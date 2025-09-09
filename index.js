@@ -102,7 +102,6 @@ app.post("/admin_signup", async (req, res)=> {
 app.post("/user_signin", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
-        username: z.string(),
         password: z.string()
     })
 
@@ -115,7 +114,7 @@ app.post("/user_signin", async (req, res)=> {
         })
     }
 
-    const user = await AdminModel.findOne({
+    const user = await UserModel.findOne({
         email: req.body.email
     })
     if(!user){
@@ -132,7 +131,7 @@ app.post("/user_signin", async (req, res)=> {
     }
 
     const token = jwt.sign({
-        username: username,
+        userId: user._id.toString(),
         "role_id": 2
     })
 
@@ -144,7 +143,6 @@ app.post("/user_signin", async (req, res)=> {
 app.post("/admin_signin", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
-        username: z.string(),
         password: z.string()
     })
 
@@ -175,7 +173,7 @@ app.post("/admin_signin", async (req, res)=> {
 
 
     const token = jwt.sign({
-        username: username,
+        userId: user._id.toString(),
         "role_id": 1
     })
 
