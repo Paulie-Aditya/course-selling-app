@@ -1,10 +1,10 @@
 const express = require("express")
-const jwt = require("jwt");
+const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const { z } = require("zod");
 const {userAuth, adminAuth, JWT_SECRET} = require("./auth")
 const mongoose = require("mongoose")
-const {bcrypt} = require("bcrypt")
+const bcrypt = require("bcrypt")
 const { UserModel,  AdminModel, CourseModel, PurchaseModel }= require("./db")
 
 
@@ -113,31 +113,39 @@ app.post("/user_signin", async (req, res)=> {
             "error": parsedData.error
         })
     }
+    try{
+        const user = await UserModel.findOne({
+            email: req.body.email
+        })
+        if(!user){
+            return res.send({
+                "message":"Invalid credentials, No such email found"
+            })
+        }
 
-    const user = await UserModel.findOne({
-        email: req.body.email
-    })
-    if(!user){
-        return res.send({
-            "message":"Invalid credentials"
+        const isMatch = await bcrypt.compare(req.body.password, user.password);
+        if(!isMatch){
+            return res.send({
+                "message":"Invalid credentials, wrong password"
+            })
+        }
+
+        const token = jwt.sign({
+            userId: user._id.toString(),
+            "role_id": 2
+        }, JWT_SECRET)
+
+        res.send({
+            "token":token
         })
     }
-
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
-    if(!isMatch){
-        return res.send({
-            "message":"Invalid credentials"
+    catch(err){
+        console.log(err)
+        res.send({
+            "message":"Invalid credentials, error"
         })
     }
-
-    const token = jwt.sign({
-        userId: user._id.toString(),
-        "role_id": 2
-    })
-
-    res.send({
-        "token":token
-    })
+    
 })
 
 app.post("/admin_signin", async (req, res)=> {
@@ -155,31 +163,39 @@ app.post("/admin_signin", async (req, res)=> {
         })
     }
 
-    const user = await AdminModel.findOne({
-        email: req.body.email
-    })
-    if(!user){
-        return res.send({
+    try{
+        const user = await AdminModel.findOne({
+            email: req.body.email
+        })
+        if(!user){
+            return res.send({
+                "message":"Invalid credentials, email not found"
+            })
+        }
+
+        const isMatch = await bcrypt.compare(req.body.password, user.password);
+        if(!isMatch){
+            return res.send({
+                "message":"Invalid credentials, wrong password"
+            })
+        }
+
+
+        const token = jwt.sign({
+            userId: user._id.toString(),
+            "role_id": 1
+        }, JWT_SECRET)
+
+        res.send({
+            "token":token
+        })
+    }
+    catch(err){
+        res.send({
             "message":"Invalid credentials"
         })
     }
-
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
-    if(!isMatch){
-        return res.send({
-            "message":"Invalid credentials"
-        })
-    }
-
-
-    const token = jwt.sign({
-        userId: user._id.toString(),
-        "role_id": 1
-    })
-
-    res.send({
-        "token":token
-    })
+    
 })
 
 app.listen(3000, () => {
