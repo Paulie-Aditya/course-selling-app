@@ -36,7 +36,8 @@ function userAuth(req, res, next){
                 "message":"Unauthorized"
             })
         }
-        req.id = user.id;
+
+        req.id = token.userId
         next(); // ok
     }
     catch(err){
@@ -63,7 +64,7 @@ function adminAuth(req, res, next){
                 "message":"Unauthorized"
             })
         }
-        req.id = user.id;
+        req.id = token.userId;
         next(); // ok
     }
     catch(err){

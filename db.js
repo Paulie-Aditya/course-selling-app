@@ -20,11 +20,11 @@ const Course = new Schema({
     name: String,
     price: Number,
     quantity: Number,
+    description: String,
     addedBy: ObjectId // will contain admin name -> can be on delete cascase + ref
 })
 
 const Purchase = new Schema({
-    purchaseId: Number,
     purchasedBy: ObjectId, // will keep user id here
     purchaseAmount: Number,
     courseId: ObjectId

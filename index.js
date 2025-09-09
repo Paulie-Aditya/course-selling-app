@@ -198,6 +198,103 @@ app.post("/admin_signin", async (req, res)=> {
     
 })
 
+app.get("/courses", userAuth, async(req, res)=> {
+    const userId = req.id;
+    // after userAuth, we are sure that this is indeed a user
+
+    try{
+        const courses = await CourseModel.findById(
+            await PurchaseModel.find({
+                purchasedBy: userId
+            })
+        )
+        res.json(courses)
+    }
+    catch(err){
+        res.send({
+            "message":"No courses found"
+        })
+    }
+
+    res.json(courses)
+})
+
+app.post("/purchase_course", userAuth, async(req, res)=> {
+    const userId = req.id;
+    const courseName = req.body.courseName;
+    const quantity = req.body.quantity;
+
+    const course = CourseModel.findOne({
+        name: courseName
+    })
+
+    if(!course){
+        res.send({
+            "message": "Course not found"
+        })
+    }
+
+    if(course.quantity >= quantity){
+        course.quantity-= quantity;
+        await PurchaseModel.create({
+            purchasedBy: userId,
+            purchaseAmount: quantity,
+            courseId: course._id
+        })
+        res.send({
+            "message":" Successfully purchased!"
+        })
+    }
+    else{
+        res.send({
+            "message":"Quantity specified is not available at the moment"
+        })
+    }
+
+})
+
+app.post("/create_course", adminAuth, async(req, res) => {
+    const {name, price, quantity, description } = req.body;
+    try
+    {
+        await CourseModel.create({
+            name: name,
+            price: price,
+            quantity: quantity,
+            description: description,
+            addedBy: req.id
+        })
+        res.send({
+            "message":"Course successfully added"
+        })
+    }
+    catch(err){
+        res.send({
+            "message":"Some error occurred"
+        })
+    }
+
+})
+
+app.post("/delete_course", adminAuth, async(req, res) => {
+    const {name} = req.body;
+    try
+    {
+        await CourseModel.deleteOne({
+            name: name,
+            addedBy: req.id
+        })
+        res.send({
+            "message":"Course successfully deleted"
+        })
+    }
+    catch(err){
+        res.send({
+            "message":"Some error occurred"
+        })
+    }
+})
+
 app.listen(3000, () => {
     console.log("Server is running")
 })
