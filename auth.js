@@ -4,21 +4,6 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-
-function auth(req, res, next){
-    const token = req.headers.authorization;
-    try{
-        const user = jwt.verify(token, JWT_SECRET);
-        req.id = user.id;
-        next()
-    }
-    catch(err){
-        return res.send({
-            "message":"Unauthorized"
-        })
-    }
-}
-
 function userAuth(req, res, next){
     const token = req.headers.authorization;
 
@@ -37,7 +22,7 @@ function userAuth(req, res, next){
             })
         }
 
-        req.id = token.userId
+        req.id = user.userId
         next(); // ok
     }
     catch(err){
@@ -64,7 +49,7 @@ function adminAuth(req, res, next){
                 "message":"Unauthorized"
             })
         }
-        req.id = token.userId;
+        req.id = user.userId;
         next(); // ok
     }
     catch(err){

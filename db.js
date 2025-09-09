@@ -21,15 +21,15 @@ const Course = new Schema({
     price: Number,
     quantity: Number,
     description: String,
-    addedBy: ObjectId // will contain admin name -> can be on delete cascase + ref
-})
+    addedBy: { type: ObjectId, ref: "admins" }
+});
 
 const Purchase = new Schema({
-    purchasedBy: ObjectId, // will keep user id here
+    purchasedBy: { type: ObjectId, ref: "users" },
     purchaseAmount: Number,
-    courseId: ObjectId
-    
-})
+    courseId: { type: ObjectId, ref: "courses" }
+});
+
 
 
 const UserModel = mongoose.model('users', User);

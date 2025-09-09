@@ -203,11 +203,14 @@ app.get("/courses", userAuth, async(req, res)=> {
     // after userAuth, we are sure that this is indeed a user
 
     try{
-        const courses = await CourseModel.findById(
-            await PurchaseModel.find({
-                purchasedBy: userId
-            })
-        )
+        const purchases = await PurchaseModel.find({
+            purchasedBy: userId
+        })
+        const courseIds = purchases.map(p=> p.courseId);
+        const courses = await CourseModel.find({
+            _id: {$in: courseIds}
+        });
+
         res.json(courses)
     }
     catch(err){
@@ -215,8 +218,6 @@ app.get("/courses", userAuth, async(req, res)=> {
             "message":"No courses found"
         })
     }
-
-    res.json(courses)
 })
 
 app.post("/purchase_course", userAuth, async(req, res)=> {
@@ -224,7 +225,7 @@ app.post("/purchase_course", userAuth, async(req, res)=> {
     const courseName = req.body.courseName;
     const quantity = req.body.quantity;
 
-    const course = CourseModel.findOne({
+    const course = await CourseModel.findOne({
         name: courseName
     })
 
@@ -236,6 +237,7 @@ app.post("/purchase_course", userAuth, async(req, res)=> {
 
     if(course.quantity >= quantity){
         course.quantity-= quantity;
+        await course.save();
         await PurchaseModel.create({
             purchasedBy: userId,
             purchaseAmount: quantity,
