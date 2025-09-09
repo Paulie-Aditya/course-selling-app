@@ -3,10 +3,12 @@ const jwt = require("jwt");
 const dotenv = require("dotenv");
 const { z } = require("zod");
 const {userAuth, adminAuth, JWT_SECRET} = require("./auth")
-
+const { mongoose } = require("./db")
 
 const app = express()
 dotenv.config();
+const databaseUrl = process.env.DATABASE_URL;
+mongoose.connect(databaseUrl)
 
 app.get('/', (req, res)=>{
     res.send({
