@@ -3,10 +3,15 @@ const jwt = require("jwt");
 const dotenv = require("dotenv");
 const { z } = require("zod");
 const {userAuth, adminAuth, JWT_SECRET} = require("./auth")
-const { mongoose } = require("./db")
+const mongoose = require("mongoose")
+const {bcrypt} = require("bcrypt")
+const { UserModel,  AdminModel, CourseModel, PurchaseModel }= require("./db")
+
 
 const app = express()
+app.use(express.json());
 dotenv.config();
+
 const databaseUrl = process.env.DATABASE_URL;
 mongoose.connect(databaseUrl)
 
@@ -16,7 +21,7 @@ app.get('/', (req, res)=>{
     })
 })
 
-app.post("/user_signup", (req, res)=> {
+app.post("/user_signup", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         username: z.string(),
@@ -32,6 +37,22 @@ app.post("/user_signup", (req, res)=> {
         })
     }
 
+    try{
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+        await UserModel.create({
+            email: req.body.email,
+            password: hashedPassword,
+            username: req.body.username
+        })
+    }
+    catch (err){
+        return res.send({
+            "message": "You have already signed up!"
+        })
+    }
+
+
     res.send(
         {
             "message":"You have signed up as a user!"
@@ -40,7 +61,7 @@ app.post("/user_signup", (req, res)=> {
 
 })
 
-app.post("/admin_signup", (req, res)=> {
+app.post("/admin_signup", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         username: z.string(),
@@ -53,6 +74,21 @@ app.post("/admin_signup", (req, res)=> {
         return res.send({
             "message":"Invalid format",
             "error": parsedData.error
+        })
+    }
+
+     try{
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+        await AdminModel.create({
+            email: req.body.email,
+            password: hashedPassword,
+            username: req.body.username
+        })
+    }
+    catch (err){
+        return res.send({
+            "message": "You have already signed up!"
         })
     }
 
@@ -63,7 +99,7 @@ app.post("/admin_signup", (req, res)=> {
     )
 })
 
-app.post("/user_signin", (req, res)=> {
+app.post("/user_signin", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         username: z.string(),
@@ -76,6 +112,22 @@ app.post("/user_signin", (req, res)=> {
         return res.send({
             "message":"Invalid format",
             "error": parsedData.error
+        })
+    }
+
+    const user = await AdminModel.findOne({
+        email: req.body.email
+    })
+    if(!user){
+        return res.send({
+            "message":"Invalid credentials"
+        })
+    }
+
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    if(!isMatch){
+        return res.send({
+            "message":"Invalid credentials"
         })
     }
 
@@ -89,7 +141,7 @@ app.post("/user_signin", (req, res)=> {
     })
 })
 
-app.post("/admin_signin", (req, res)=> {
+app.post("/admin_signin", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         username: z.string(),
@@ -104,6 +156,23 @@ app.post("/admin_signin", (req, res)=> {
             "error": parsedData.error
         })
     }
+
+    const user = await AdminModel.findOne({
+        email: req.body.email
+    })
+    if(!user){
+        return res.send({
+            "message":"Invalid credentials"
+        })
+    }
+
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    if(!isMatch){
+        return res.send({
+            "message":"Invalid credentials"
+        })
+    }
+
 
     const token = jwt.sign({
         username: username,
