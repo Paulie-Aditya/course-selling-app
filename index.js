@@ -21,7 +21,7 @@ app.get('/', (req, res)=>{
     })
 })
 
-app.post("/user_signup", async (req, res)=> {
+app.post("/user/signup", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         username: z.string(),
@@ -61,7 +61,7 @@ app.post("/user_signup", async (req, res)=> {
 
 })
 
-app.post("/admin_signup", async (req, res)=> {
+app.post("/admin/signup", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         username: z.string(),
@@ -99,7 +99,7 @@ app.post("/admin_signup", async (req, res)=> {
     )
 })
 
-app.post("/user_signin", async (req, res)=> {
+app.post("/user/signin", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         password: z.string()
@@ -148,7 +148,7 @@ app.post("/user_signin", async (req, res)=> {
     
 })
 
-app.post("/admin_signin", async (req, res)=> {
+app.post("/admin/signin", async (req, res)=> {
     const requiredBody = z.object({
         email: z.email(),
         password: z.string()
@@ -198,7 +198,7 @@ app.post("/admin_signin", async (req, res)=> {
     
 })
 
-app.get("/courses", userAuth, async(req, res)=> {
+app.get("/courses/purchases", userAuth, async(req, res)=> {
     const userId = req.id;
     // after userAuth, we are sure that this is indeed a user
 
@@ -220,7 +220,7 @@ app.get("/courses", userAuth, async(req, res)=> {
     }
 })
 
-app.post("/purchase_course", userAuth, async(req, res)=> {
+app.post("/courses/buy", userAuth, async(req, res)=> {
     const userId = req.id;
     const courseName = req.body.courseName;
     const quantity = req.body.quantity;
@@ -255,7 +255,7 @@ app.post("/purchase_course", userAuth, async(req, res)=> {
 
 })
 
-app.post("/create_course", adminAuth, async(req, res) => {
+app.post("/courses/create", adminAuth, async(req, res) => {
     const {name, price, quantity, description } = req.body;
     try
     {
@@ -278,7 +278,7 @@ app.post("/create_course", adminAuth, async(req, res) => {
 
 })
 
-app.post("/delete_course", adminAuth, async(req, res) => {
+app.post("/courses/delete", adminAuth, async(req, res) => {
     const {name} = req.body;
     try
     {
@@ -295,6 +295,10 @@ app.post("/delete_course", adminAuth, async(req, res) => {
             "message":"Some error occurred"
         })
     }
+})
+app.get("/courses", async(req, res) => {
+    const courses = await CourseModel.find()
+    res.send(courses)
 })
 
 app.listen(3000, () => {
