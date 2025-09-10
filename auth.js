@@ -12,13 +12,13 @@ function userAuth(req, res, next){
 
         if(!user){
             return res.send({
-                "message":"Unauthorized"
+                "message":"Unauthorized, invalid credentials"
             })
         }
 
         if(user.role_id != 2){
             return res.send({
-                "message":"Unauthorized"
+                "message":"Unauthorized, not an user"
             })
         }
 
@@ -26,6 +26,7 @@ function userAuth(req, res, next){
         next(); // ok
     }
     catch(err){
+        console.log(err)
         return res.send({
             "message": "Unauthorized"
         })
@@ -37,22 +38,22 @@ function adminAuth(req, res, next){
 
     try{
         const user = jwt.verify(token, JWT_SECRET);
-
         if(!user){
             return res.send({
-                "message":"Unauthorized"
+                "message":"Unauthorized, invalid credentials"
             })
         }
 
         if(user.role_id != 1){
             return res.send({
-                "message":"Unauthorized"
+                "message":"Unauthorized, not an admin"
             })
         }
         req.id = user.userId;
         next(); // ok
     }
     catch(err){
+        console.log(err)
         return res.send({
             "message": "Unauthorized"
         })

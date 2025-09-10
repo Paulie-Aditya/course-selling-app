@@ -81,7 +81,7 @@ userRouter.post("/signin", async (req, res)=> {
         }
 
         const token = jwt.sign({
-            userId: user._id.toString(),
+            userId: user._id,
             "role_id": 2
         }, JWT_SECRET)
 

@@ -81,6 +81,7 @@ courseRouter.post("/create", adminAuth, async(req, res) => {
         })
     }
     catch(err){
+        console.log(err)
         res.send({
             "message":"Some error occurred"
         })

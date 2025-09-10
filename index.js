@@ -15,18 +15,20 @@ app.use(express.json());
 dotenv.config();
 
 const databaseUrl = process.env.DATABASE_URL;
-mongoose.connect(databaseUrl)
 
 app.get('/', (req, res)=>{
-    res.send({
-        "message": "Hello world"
-    })
+    res.sendFile(__dirname + '/index.html')
 })
 
 app.use('/user', userRouter);
 app.use('/courses', courseRouter);
 app.use('/admin', adminRouter);
 
-app.listen(3000, () => {
-    console.log("Server is running")
-})
+async function main(){
+    await mongoose.connect(databaseUrl);
+    app.listen(3000 , () =>{
+        console.log("Server is runnning")
+    })
+}
+
+main()
